@@ -124,9 +124,27 @@ func (is *Service) GetImage(ID string) (resp *ImageData, err error) {
 	return createImageData(result)
 }
 
-func (is *Service) UpdateImage(ID string) {
-	//TODO implement me
-	panic("implement me")
+func (is *Service) UpdateImage(ID string, data ImageData) (resp *ImageData, err error) {
+	// save image info to DB
+	imageCollection := persistence.GetCollection("images")
+	filter := bson.D{{"_id", ID}}
+	update := bson.D{{"$set", convertImageDataToDocument(data)}}
+	// find one and update ImageData by ID
+	res, err := imageCollection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		// if query did not match any documents
+		if err == mongo.ErrNoDocuments {
+			log.Error("UpdateImage: Query for "+ID+" did not match any documents", err)
+			return nil, err
+		} else {
+			log.Error("UpdateImage: Error on FindOneAndUpdate", err)
+			return nil, err
+		}
+	}
+	log.Info(fmt.Sprintf("updated document %v", res))
+
+	return &data, nil
 }
 
 func (is *Service) CreateImage(request Request) {

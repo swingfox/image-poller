@@ -62,6 +62,44 @@ func convertImageDataToDBObject(imageData []ImageData) []interface{} {
 	return dbObjects
 }
 
+func convertImageDataToDocument(imageData ImageData) interface{} {
+	document := bson.D{
+		{"url", imageData.Uri},
+		{"hits", imageData.Hits},
+	}
+	if imageData.Uri != "" {
+		document = bson.D{{"url", imageData.Uri}}
+	} else if imageData.Hits != 0 {
+		document = bson.D{{"hits", imageData.Hits}}
+	} else {
+		document = bson.D{}
+	}
+	return document
+}
+
+func convertDocumentToImageData(data bson.M) *ImageData {
+	var id = ""
+	var hits int32 = 0
+	var uri = ""
+
+	if val, ok := data["_id"]; ok {
+		id = val.(string)
+	}
+
+	if val, ok := data["hits"]; ok {
+		hits = val.(int32)
+	}
+
+	if val, ok := data["uri"]; ok {
+		uri = val.(string)
+	}
+	return &ImageData{
+		ID:   id,
+		Hits: hits,
+		Uri:  uri,
+	}
+}
+
 func createImageData(result *mongo.SingleResult) (*ImageData, error) {
 	var imageMetadata bson.M
 	err := result.Decode(&imageMetadata)

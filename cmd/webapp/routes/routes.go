@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/swingfox/image-poller/internal/image"
@@ -41,7 +42,7 @@ type ImageProvider interface {
 	CreateImage(request image.Request)
 	GetImages(limit int) (*image.ImageResponse, error)
 	GetImage(ID string) (*image.ImageData, error)
-	UpdateImage(ID string)
+	UpdateImage(ID string, data image.ImageData) (*image.ImageData, error)
 }
 
 type Handler struct {
@@ -133,7 +134,25 @@ func (hndlr *Handler) GetImage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hndlr *Handler) UpdateImage(w http.ResponseWriter, r *http.Request) {
-
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		log.Info("GetImage: ID is missing in parameters")
+	}
+	var imageData image.ImageData
+	err := json.NewDecoder(r.Body).Decode(&imageData)
+	fmt.Println("imageDataimageDataimageData", imageData)
+	if err != nil {
+		log.Error("Error decoding request body with ID: " + id)
+		methodBadRequestHandler(w, r)
+	}
+	imageMetadata, err := hndlr.ImageService.UpdateImage(id, imageData)
+	if err != nil {
+		log.Error("Error calling UpdateImage with ID: " + id)
+		methodNotFoundHandler(w, r)
+	} else {
+		writeJsonResponse(w, imageMetadata)
+	}
 }
 
 func (hndlr *Handler) DeleteImage(w http.ResponseWriter, r *http.Request) {

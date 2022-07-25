@@ -16,9 +16,9 @@ type ImageResponse struct {
 }
 
 type ImageData struct {
-	ID   string `json:"id"`
-	Hits int32  `json:"hits"`
-	Uri  string `json:"uri"`
+	ID   string `json:"id,omitempty"`
+	Hits int32  `json:"hits,omitempty"`
+	Uri  string `json:"uri,omitempty"`
 }
 
 type Photo struct {
