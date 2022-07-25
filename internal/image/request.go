@@ -16,9 +16,10 @@ type ImageResponse struct {
 }
 
 type ImageData struct {
-	ID   string `json:"id,omitempty"`
-	Hits int32  `json:"hits,omitempty"`
-	Uri  string `json:"uri,omitempty"`
+	ID        string `json:"id,omitempty"`
+	Hits      int32  `json:"hits,omitempty"`
+	Uri       string `json:"uri,omitempty"`
+	IsDeleted bool   `json:"isDeleted,omitempty"`
 }
 
 type Photo struct {

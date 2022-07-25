@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/swingfox/image-poller/internal/image"
@@ -43,6 +42,7 @@ type ImageProvider interface {
 	GetImages(limit int) (*image.ImageResponse, error)
 	GetImage(ID string) (*image.ImageData, error)
 	UpdateImage(ID string, data image.ImageData) (*image.ImageData, error)
+	DeleteImage(ID string) (int64, error)
 }
 
 type Handler struct {
@@ -137,11 +137,10 @@ func (hndlr *Handler) UpdateImage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, ok := vars["id"]
 	if !ok {
-		log.Info("GetImage: ID is missing in parameters")
+		log.Info("UpdateImage: ID is missing in parameters")
 	}
 	var imageData image.ImageData
 	err := json.NewDecoder(r.Body).Decode(&imageData)
-	fmt.Println("imageDataimageDataimageData", imageData)
 	if err != nil {
 		log.Error("Error decoding request body with ID: " + id)
 		methodBadRequestHandler(w, r)
@@ -156,7 +155,18 @@ func (hndlr *Handler) UpdateImage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hndlr *Handler) DeleteImage(w http.ResponseWriter, r *http.Request) {
-
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		log.Info("DeleteImage: ID is missing in parameters")
+	}
+	imageMetadata, err := hndlr.ImageService.DeleteImage(id)
+	if err != nil {
+		log.Error("Error calling DeleteImage with ID: " + id)
+		methodNotFoundHandler(w, r)
+	} else {
+		writeJsonResponse(w, imageMetadata)
+	}
 }
 
 func (hndlr *Handler) CreateRole(w http.ResponseWriter, r *http.Request) {

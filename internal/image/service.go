@@ -125,7 +125,7 @@ func (is *Service) GetImage(ID string) (resp *ImageData, err error) {
 }
 
 func (is *Service) UpdateImage(ID string, data ImageData) (resp *ImageData, err error) {
-	// save image info to DB
+	// update image info to DB
 	imageCollection := persistence.GetCollection("images")
 	filter := bson.D{{"_id", ID}}
 	update := bson.D{{"$set", convertImageDataToDocument(data)}}
@@ -145,6 +145,28 @@ func (is *Service) UpdateImage(ID string, data ImageData) (resp *ImageData, err 
 	log.Info(fmt.Sprintf("updated document %v", res))
 
 	return &data, nil
+}
+
+func (is *Service) DeleteImage(ID string) (int64, error) {
+	// update image info to DB
+	imageCollection := persistence.GetCollection("images")
+	filter := bson.D{{"_id", ID}}
+	update := bson.D{{"$set", bson.D{{"isDeleted", true}}}}
+	// find one and update ImageData by ID
+	res, err := imageCollection.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		// if query did not match any documents
+		if err == mongo.ErrNoDocuments {
+			log.Error("DeleteImage: Query for "+ID+" did not match any documents", err)
+			return 0, err
+		} else {
+			log.Error("DeleteImage: Error on FindOneAndUpdate", err)
+			return 0, err
+		}
+	}
+	log.Info(fmt.Sprintf("deleted document %v", res))
+	return res.MatchedCount, nil
 }
 
 func (is *Service) CreateImage(request Request) {
