@@ -6,6 +6,7 @@ import (
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"sync"
 )
 
@@ -59,4 +60,36 @@ func convertImageDataToDBObject(imageData []ImageData) []interface{} {
 	}
 
 	return dbObjects
+}
+
+func createImageData(result *mongo.SingleResult) (*ImageData, error) {
+	var imageMetadata bson.M
+	err := result.Decode(&imageMetadata)
+
+	if err != nil {
+		log.Error("Error on decoding ImageData ", err)
+		return nil, err
+	}
+
+	var id = ""
+	var hits int32 = 0
+	var uri = ""
+
+	if val, ok := imageMetadata["_id"]; ok {
+		id = val.(string)
+	}
+
+	if val, ok := imageMetadata["hits"]; ok {
+		hits = val.(int32)
+	}
+
+	if val, ok := imageMetadata["uri"]; ok {
+		uri = val.(string)
+	}
+
+	return &ImageData{
+		ID:   id,
+		Hits: hits,
+		Uri:  uri,
+	}, nil
 }

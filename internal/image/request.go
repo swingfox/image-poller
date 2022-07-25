@@ -17,7 +17,7 @@ type ImageResponse struct {
 
 type ImageData struct {
 	ID   string `json:"id"`
-	Hits int    `json:"hits"`
+	Hits int32  `json:"hits"`
 	Uri  string `json:"uri"`
 }
 

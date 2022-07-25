@@ -7,6 +7,9 @@ import (
 	"github.com/cloudinary/cloudinary-go/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/swingfox/image-poller/internal/persistence"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -49,6 +52,7 @@ func (is *Service) GetImages(limit int) (resp *ImageResponse, err error) {
 	// get the response data
 	imagesData := getImagesData(imagesResponse, cld)
 
+	// save image info to DB
 	imageCollection := persistence.GetCollection("images")
 	result, err := imageCollection.InsertMany(context.TODO(), convertImageDataToDBObject(imagesData))
 
@@ -99,9 +103,25 @@ func (is *Service) getImagesFromProvider(limit int) (ProviderResponse, error) {
 	return imageResponse, err
 }
 
-func (is *Service) GetImage(ID string) {
-	//TODO implement me
-	panic("implement me")
+func (is *Service) GetImage(ID string) (resp *ImageData, err error) {
+	// save image info to DB
+	imageCollection := persistence.GetCollection("images")
+	opts := options.FindOneOptions{}
+	// find one ImageData by ID
+	result := imageCollection.FindOne(context.TODO(), bson.D{{"_id", ID}}, &opts)
+
+	if err != nil {
+		// if query did not match any documents
+		if err == mongo.ErrNoDocuments {
+			log.Error("GetImage: Query for "+ID+" did not match any documents", err)
+			return nil, err
+		} else {
+			log.Error("GetImage: Error on FindOne", err)
+			return nil, err
+		}
+	}
+
+	return createImageData(result)
 }
 
 func (is *Service) UpdateImage(ID string) {

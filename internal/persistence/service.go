@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"context"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/swingfox/image-poller/cmd/webapp/config"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -21,7 +20,6 @@ func GetCollection(collectionName string) *mongo.Collection {
 	port := config.Registry.GetString("DB.PORT")
 
 	srv := "mongodb://" + dbUsername + ":" + dbPassword + "@" + host + ":" + port + "/" + name + "?authSource=admin"
-	fmt.Println(srv)
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(srv))
 	if err != nil {
 		log.Fatal("error connecting mongodb", err)

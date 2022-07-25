@@ -40,7 +40,7 @@ type User interface {
 type ImageProvider interface {
 	CreateImage(request image.Request)
 	GetImages(limit int) (*image.ImageResponse, error)
-	GetImage(ID string)
+	GetImage(ID string) (*image.ImageData, error)
 	UpdateImage(ID string)
 }
 
@@ -55,21 +55,21 @@ func (hndlr *Handler) Set(router *mux.Router) {
 	// User Routes
 	router.HandleFunc("/users", hndlr.CreateUser).Methods("POST")
 	router.HandleFunc("/users", hndlr.GetUser).Methods("GET")
-	router.HandleFunc("/users/{:id}", hndlr.UpdateUser).Methods("PATCH")
-	router.HandleFunc("/users/{:id}", hndlr.DeleteUser).Methods("DELETE")
+	router.HandleFunc("/users/{id}", hndlr.UpdateUser).Methods("PATCH")
+	router.HandleFunc("/users/{id}", hndlr.DeleteUser).Methods("DELETE")
 
 	// Image Routes
 	router.HandleFunc("/images", hndlr.CreateImage).Methods("POST")
 	router.HandleFunc("/images", hndlr.GetImages).Methods("GET")
-	router.HandleFunc("/images/{:id}", hndlr.GetImage).Methods("GET")
-	router.HandleFunc("/images/{:id}", hndlr.UpdateImage).Methods("PATCH")
-	router.HandleFunc("/images/{:id}", hndlr.DeleteImage).Methods("DELETE")
+	router.HandleFunc("/images/{id}", hndlr.GetImage).Methods("GET")
+	router.HandleFunc("/images/{id}", hndlr.UpdateImage).Methods("PATCH")
+	router.HandleFunc("/images/{id}", hndlr.DeleteImage).Methods("DELETE")
 
 	// User role Routes
 	router.HandleFunc("/userrole", hndlr.CreateRole).Methods("POST")
-	router.HandleFunc("/userrole/{:id}", hndlr.GetRole).Methods("GET")
-	router.HandleFunc("/userrole/{:id}", hndlr.UpdateRole).Methods("PATCH")
-	router.HandleFunc("/userrole/{:id}", hndlr.DeleteRole).Methods("DELETE")
+	router.HandleFunc("/userrole/{id}", hndlr.GetRole).Methods("GET")
+	router.HandleFunc("/userrole/{id}", hndlr.UpdateRole).Methods("PATCH")
+	router.HandleFunc("/userrole/{id}", hndlr.DeleteRole).Methods("DELETE")
 
 }
 
@@ -117,7 +117,19 @@ func (hndlr *Handler) GetImages(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hndlr *Handler) GetImage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		log.Info("GetImage: ID is missing in parameters")
+	}
+	imageMetadata, err := hndlr.ImageService.GetImage(id)
 
+	if err != nil {
+		log.Error("Error calling GetImage with ID: " + id)
+		methodNotFoundHandler(w, r)
+	} else {
+		writeJsonResponse(w, imageMetadata)
+	}
 }
 
 func (hndlr *Handler) UpdateImage(w http.ResponseWriter, r *http.Request) {
@@ -142,6 +154,11 @@ func (hndlr *Handler) GetRole(w http.ResponseWriter, r *http.Request) {
 
 func (hndlr *Handler) DeleteRole(w http.ResponseWriter, r *http.Request) {
 
+}
+
+// see http.HandlerFunc
+func methodNotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	serviceCallErrorHandler(http.StatusNotFound, w, r)
 }
 
 // see http.HandlerFunc
