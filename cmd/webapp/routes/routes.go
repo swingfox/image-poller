@@ -3,10 +3,12 @@ package routes
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"github.com/swingfox/image-poller/internal/image"
 	"github.com/swingfox/image-poller/internal/user"
 	"github.com/swingfox/image-poller/internal/userrole"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -37,7 +39,7 @@ type User interface {
 //go:generate mockgen -destination=../../../mocks/mock_image_provider.go -package=mocks -source routes.go
 type ImageProvider interface {
 	CreateImage(request image.Request)
-	GetImages()
+	GetImages(limit int) (*image.ImageResponse, error)
 	GetImage(ID string)
 	UpdateImage(ID string)
 }
@@ -92,7 +94,26 @@ func (hndlr *Handler) CreateImage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hndlr *Handler) GetImages(w http.ResponseWriter, r *http.Request) {
+	var imageResponse *image.ImageResponse
+	var imageErr error
+	// extract optional limit query param from URL
+	if limit, ok := r.URL.Query()["limit"]; ok {
+		value, err := strconv.Atoi(limit[0])
+		if err != nil {
+			log.Error("Limit query param parse error.")
+		}
+		imageResponse, imageErr = hndlr.ImageService.GetImages(value)
+		if imageErr != nil {
+			log.Error(imageErr)
+		}
+	} else {
+		imageResponse, imageErr = hndlr.ImageService.GetImages(5)
+		if imageErr != nil {
+			log.Error(imageErr)
+		}
+	}
 
+	writeJsonResponse(w, imageResponse)
 }
 
 func (hndlr *Handler) GetImage(w http.ResponseWriter, r *http.Request) {

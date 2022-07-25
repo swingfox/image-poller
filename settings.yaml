@@ -1,1 +1,18 @@
 SERVER_PORT: 8081
+
+IMAGE_PROVIDER:
+  HOST: https://api.pexels.com/v1/search?query=nature&per_page=%s
+  API_KEY: 563492ad6f91700001000001591c44df5f714650a8666933de99bf18
+  LIMIT: 10
+
+STORAGE:
+  API_KEY: 634351961318464
+  API_SECRET: -rkcEZZLFSw1auojLyhdX7w0IQ0
+  CLOUD_NAME: dramirez
+
+DB:
+  HOST: localhost
+  USERNAME: root
+  PASSWORD: password
+  PORT: 27017
+  NAME: image_poller
