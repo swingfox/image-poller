@@ -1,10 +1,12 @@
 package image
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/cloudinary/cloudinary-go/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/swingfox/image-poller/internal/persistence"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -46,6 +48,15 @@ func (is *Service) GetImages(limit int) (resp *ImageResponse, err error) {
 
 	// get the response data
 	imagesData := getImagesData(imagesResponse, cld)
+
+	imageCollection := persistence.GetCollection("images")
+	result, err := imageCollection.InsertMany(context.TODO(), convertImageDataToDBObject(imagesData))
+
+	if err != nil {
+		log.Error("error saving db", err)
+	} else {
+		log.Info("successfully inserted to DB", result)
+	}
 
 	log.Info("Finished Processing Images...")
 	return &ImageResponse{

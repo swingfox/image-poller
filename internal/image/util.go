@@ -5,6 +5,7 @@ import (
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	log "github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 	"sync"
 )
 
@@ -43,4 +44,19 @@ func getImagesData(imagesResponse ProviderResponse, cld *cloudinary.Cloudinary) 
 		imagesData = append(imagesData, v)
 	}
 	return imagesData
+}
+
+func convertImageDataToDBObject(imageData []ImageData) []interface{} {
+	dbObjects := make([]interface{}, 0)
+
+	for _, data := range imageData {
+		bson := bson.D{
+			{"_id", data.ID},
+			{"url", data.Uri},
+			{"hits", data.Hits},
+		}
+		dbObjects = append(dbObjects, bson)
+	}
+
+	return dbObjects
 }

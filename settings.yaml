@@ -13,6 +13,6 @@ STORAGE:
 DB:
   HOST: localhost
   USERNAME: root
-  PASSWORD: password
+  PASSWORD: rootpassword
   PORT: 27017
   NAME: image_poller
