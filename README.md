@@ -58,5 +58,5 @@ go run .\cmd\webapp\main.go
 ## ⛏️ Built Using <a name = "built_using"></a>
 
 - [MongoDB](https://www.mongodb.com/) - Database
-- [Go Lang 1.18](https://nodejs.org/en/blog/release/v12.13.0/)
+- [Go Lang 1.18](https://go.dev/blog/go1.18)
 - [GoLand](https://www.jetbrains.com/go/)
