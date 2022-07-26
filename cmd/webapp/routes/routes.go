@@ -91,7 +91,19 @@ func (hndlr *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hndlr *Handler) CreateImage(w http.ResponseWriter, r *http.Request) {
-
+	var imageData image.ImageData
+	err := json.NewDecoder(r.Body).Decode(&imageData)
+	if err != nil {
+		log.Error("Error decoding request body: ", err)
+		methodBadRequestHandler(w, r)
+	}
+	imageMetadata, err := hndlr.ImageService.CreateImage(imageData)
+	if err != nil {
+		log.Error("Error calling CreateImage with data: ", err)
+		methodNotFoundHandler(w, r)
+	} else {
+		writeJsonResponse(w, imageMetadata)
+	}
 }
 
 func (hndlr *Handler) GetImages(w http.ResponseWriter, r *http.Request) {
