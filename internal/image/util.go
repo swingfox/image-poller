@@ -57,7 +57,7 @@ func convertSliceImageDataToDBObject(imageData []ImageData) []interface{} {
 	for _, data := range imageData {
 		bson := bson.D{
 			{"_id", data.ID},
-			{"url", data.Uri},
+			{"uri", data.Uri},
 			{"hits", data.Hits},
 		}
 		dbObjects = append(dbObjects, bson)
@@ -68,16 +68,17 @@ func convertSliceImageDataToDBObject(imageData []ImageData) []interface{} {
 
 // convertImageDataToDocument - Converter used for converting ImageData to MongoDB Document.
 func convertImageDataToDocument(imageData ImageData) interface{} {
-	document := bson.D{
-		{"url", imageData.Uri},
-		{"hits", imageData.Hits},
-	}
-	if imageData.Uri != "" {
-		document = bson.D{{"url", imageData.Uri}}
+	document := bson.D{}
+
+	if imageData.Uri != "" && imageData.Hits != 0 {
+		document = bson.D{
+			{"uri", imageData.Uri},
+			{"hits", imageData.Hits},
+		}
+	} else if imageData.Uri != "" {
+		document = bson.D{{"uri", imageData.Uri}}
 	} else if imageData.Hits != 0 {
 		document = bson.D{{"hits", imageData.Hits}}
-	} else {
-		document = bson.D{}
 	}
 	return document
 }
