@@ -169,7 +169,7 @@ func (is *Service) DeleteImage(ID string) (int64, error) {
 	return res.MatchedCount, nil
 }
 
-func (is *Service) CreateImage(request Request) {
+func (is *Service) CreateImage(data ImageData) {
 	//TODO implement me
 	panic("implement me")
 }

@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type ServiceError struct {
+type ServiceResponse struct {
 	Timestamp time.Time `json:"timestamp"`
 	Status    int       `json:"status"`
 	Error     string    `json:"error"`
@@ -38,7 +38,7 @@ type User interface {
 
 //go:generate mockgen -destination=../../../mocks/mock_image_provider.go -package=mocks -source routes.go
 type ImageProvider interface {
-	CreateImage(request image.Request)
+	CreateImage(request image.ImageData)
 	GetImages(limit int) (*image.ImageResponse, error)
 	GetImage(ID string) (*image.ImageData, error)
 	UpdateImage(ID string, data image.ImageData) (*image.ImageData, error)
@@ -97,12 +97,19 @@ func (hndlr *Handler) CreateImage(w http.ResponseWriter, r *http.Request) {
 		log.Error("Error decoding request body: ", err)
 		methodBadRequestHandler(w, r)
 	}
-	imageMetadata, err := hndlr.ImageService.CreateImage(imageData)
+	hndlr.ImageService.CreateImage(imageData)
 	if err != nil {
 		log.Error("Error calling CreateImage with data: ", err)
 		methodNotFoundHandler(w, r)
 	} else {
-		writeJsonResponse(w, imageMetadata)
+		response := ServiceResponse{
+			Timestamp: time.Now().UTC(),
+			Status:    200,
+			Path:      r.URL.Path,
+		}
+		errorResponse, _ := json.Marshal(response)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(errorResponse)
 	}
 }
 
@@ -218,7 +225,7 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func serviceCallErrorHandler(errorCode int, w http.ResponseWriter, r *http.Request) {
-	error := ServiceError{
+	error := ServiceResponse{
 		Timestamp: time.Now().UTC(),
 		Status:    errorCode,
 		Error:     http.StatusText(errorCode),
