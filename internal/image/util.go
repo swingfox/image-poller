@@ -10,6 +10,7 @@ import (
 	"sync"
 )
 
+// UploadToStorage - Upload image to Cloudinary (image data store).
 func UploadToStorage(cld *cloudinary.Cloudinary, photo Photo, ch chan ImageData, wg *sync.WaitGroup) {
 	defer wg.Done()
 	ctx := context.Background()
@@ -25,6 +26,7 @@ func UploadToStorage(cld *cloudinary.Cloudinary, photo Photo, ch chan ImageData,
 	}
 }
 
+// getImagesData - Performs the asynchronous upload to the Cloudinary.
 func getImagesData(imagesResponse ProviderResponse, cld *cloudinary.Cloudinary) []ImageData {
 	var wg sync.WaitGroup
 	ch := make(chan ImageData)
@@ -41,12 +43,14 @@ func getImagesData(imagesResponse ProviderResponse, cld *cloudinary.Cloudinary) 
 		close(ch)
 	}()
 
+	// traverse the channel and append it to the imagesData slice
 	for v := range ch {
 		imagesData = append(imagesData, v)
 	}
 	return imagesData
 }
 
+// convertSliceImageDataToDBObject - Converter used for converting []ImageData to MongoDB Document.
 func convertSliceImageDataToDBObject(imageData []ImageData) []interface{} {
 	dbObjects := make([]interface{}, 0)
 
@@ -62,6 +66,7 @@ func convertSliceImageDataToDBObject(imageData []ImageData) []interface{} {
 	return dbObjects
 }
 
+// convertImageDataToDocument - Converter used for converting ImageData to MongoDB Document.
 func convertImageDataToDocument(imageData ImageData) interface{} {
 	document := bson.D{
 		{"url", imageData.Uri},
@@ -77,29 +82,7 @@ func convertImageDataToDocument(imageData ImageData) interface{} {
 	return document
 }
 
-func convertDocumentToImageData(data bson.M) *ImageData {
-	var id = ""
-	var hits int32 = 0
-	var uri = ""
-
-	if val, ok := data["_id"]; ok {
-		id = val.(string)
-	}
-
-	if val, ok := data["hits"]; ok {
-		hits = val.(int32)
-	}
-
-	if val, ok := data["uri"]; ok {
-		uri = val.(string)
-	}
-	return &ImageData{
-		ID:   id,
-		Hits: hits,
-		Uri:  uri,
-	}
-}
-
+// createImageData Convert SingleResult to Image Data model
 func createImageData(result *mongo.SingleResult) (*ImageData, error) {
 	var imageMetadata bson.M
 	err := result.Decode(&imageMetadata)

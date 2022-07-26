@@ -29,6 +29,7 @@ type Service struct {
 	Client      http.Client
 }
 
+// GetImages Retrieves images from Pexel and saves the actual image to the Cloudinary. It also saves the image metadata to the MongoDB.
 func (is *Service) GetImages(limit int) (resp *ImageResponse, err error) {
 	if limit > is.ImageConfig.Limit {
 		log.Info("Image Exceeded the hard limit.")
@@ -69,6 +70,7 @@ func (is *Service) GetImages(limit int) (resp *ImageResponse, err error) {
 	}, nil
 }
 
+// getStorageClient - Initialize Cloudinary client.
 func (is *Service) getStorageClient() (*cloudinary.Cloudinary, error) {
 	var cld, cldErr = cloudinary.NewFromParams(is.ImageConfig.StorageName, is.ImageConfig.StorageAPIKey, is.ImageConfig.StorageSecret)
 	if cldErr != nil {
@@ -78,6 +80,7 @@ func (is *Service) getStorageClient() (*cloudinary.Cloudinary, error) {
 	return cld, nil
 }
 
+// getImagesFromProvider - Get random images from Pexel.
 func (is *Service) getImagesFromProvider(limit int) (ProviderResponse, error) {
 	query := fmt.Sprintf(is.ImageConfig.ImageProviderHost, strconv.Itoa(limit))
 
@@ -103,6 +106,7 @@ func (is *Service) getImagesFromProvider(limit int) (ProviderResponse, error) {
 	return imageResponse, err
 }
 
+// GetImage - GetImage by ID.
 func (is *Service) GetImage(ID string) (resp *ImageData, err error) {
 	// save image info to DB
 	imageCollection := persistence.GetCollection("images")
@@ -124,6 +128,7 @@ func (is *Service) GetImage(ID string) (resp *ImageData, err error) {
 	return createImageData(result)
 }
 
+// UpdateImage - UpdateImage by ID on hits and URLs field.
 func (is *Service) UpdateImage(ID string, data ImageData) (resp *ImageData, err error) {
 	// update image info to DB
 	imageCollection := persistence.GetCollection("images")
@@ -147,6 +152,7 @@ func (is *Service) UpdateImage(ID string, data ImageData) (resp *ImageData, err 
 	return &data, nil
 }
 
+// DeleteImage - Performs a soft delete of the image.
 func (is *Service) DeleteImage(ID string) (int64, error) {
 	// update image info to DB
 	imageCollection := persistence.GetCollection("images")

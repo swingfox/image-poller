@@ -20,9 +20,12 @@ func main() {
 	routesHandler.Set(r)
 	serverPort := config.Registry.GetString("SERVER_PORT")
 	log.Info("Server listening on port " + serverPort)
+
+	// Listen at specified port
 	http.ListenAndServe(":"+serverPort, r)
 }
 
+// Initialize Initalize is the main init method to be used for services initialization
 func Initialize() *routes.Handler {
 
 	imageService := newImageProviderService()
@@ -34,6 +37,7 @@ func Initialize() *routes.Handler {
 	}
 }
 
+// Initialize image service
 func newImageProviderService() *image.Service {
 	imageConfig := image.Config{
 		ImageProviderHost:   config.Registry.GetString("IMAGE_PROVIDER.HOST"),

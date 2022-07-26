@@ -9,9 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type MongoClient struct {
-}
-
+// GetCollection Get MongoDB collection.
 func GetCollection(collectionName string) *mongo.Collection {
 	dbUsername := config.Registry.GetString("DB.USERNAME")
 	dbPassword := config.Registry.GetString("DB.PASSWORD")
