@@ -47,7 +47,7 @@ func getImagesData(imagesResponse ProviderResponse, cld *cloudinary.Cloudinary) 
 	return imagesData
 }
 
-func convertImageDataToDBObject(imageData []ImageData) []interface{} {
+func convertSliceImageDataToDBObject(imageData []ImageData) []interface{} {
 	dbObjects := make([]interface{}, 0)
 
 	for _, data := range imageData {

@@ -54,7 +54,7 @@ func (is *Service) GetImages(limit int) (resp *ImageResponse, err error) {
 
 	// save image info to DB
 	imageCollection := persistence.GetCollection("images")
-	result, err := imageCollection.InsertMany(context.TODO(), convertImageDataToDBObject(imagesData))
+	result, err := imageCollection.InsertMany(context.TODO(), convertSliceImageDataToDBObject(imagesData))
 
 	if err != nil {
 		log.Error("error saving db", err)
