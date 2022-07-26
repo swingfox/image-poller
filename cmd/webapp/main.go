@@ -24,9 +24,27 @@ func main() {
 }
 
 func Initialize() *routes.Handler {
+
+	imageService := newImageProviderService()
+
 	return &routes.Handler{
-		ImageService:    image.ImageService{},
+		ImageService:    imageService,
 		UserService:     user.UserService{},
 		UserRoleService: userrole.UserRoleService{},
 	}
+}
+
+func newImageProviderService() *image.Service {
+	imageConfig := image.Config{
+		ImageProviderHost:   config.Registry.GetString("IMAGE_PROVIDER.HOST"),
+		ImageProviderAPIKey: config.Registry.GetString("IMAGE_PROVIDER.API_KEY"),
+		Limit:               config.Registry.GetInt("IMAGE_PROVIDER.LIMIT"),
+		StorageName:         config.Registry.GetString("STORAGE.CLOUD_NAME"),
+		StorageAPIKey:       config.Registry.GetString("STORAGE.API_KEY"),
+		StorageSecret:       config.Registry.GetString("STORAGE.API_SECRET"),
+	}
+	imageService := &image.Service{
+		ImageConfig: imageConfig,
+	}
+	return imageService
 }
